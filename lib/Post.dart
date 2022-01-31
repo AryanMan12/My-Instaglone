@@ -1,6 +1,7 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
+import 'package:instaglone/profilepage.dart';
 
 class Post extends StatefulWidget {
   final snapshot;
@@ -111,17 +112,30 @@ class _PostState extends State<Post> {
               padding: const EdgeInsets.symmetric(vertical: 0, horizontal: 10),
               child: Row(
                 children: [
-                  CircleAvatar(
-                    child: Image.network(
-                      post_prof,
-                      errorBuilder: (context, error, stackTrace) =>
-                          CircularProgressIndicator(),
+                  InkWell(
+                    onTap: () => Navigator.push(
+                        context,
+                        MaterialPageRoute(
+                            builder: (context) =>
+                                ProfileScreen(uid: snap["owner"]))),
+                    child: CircleAvatar(
+                      backgroundImage: NetworkImage(
+                        post_prof,
+                      ),
                     ),
                   ),
                   SizedBox(width: 10),
-                  Text(
-                    post_owner,
-                    style: TextStyle(fontWeight: FontWeight.bold, fontSize: 18),
+                  InkWell(
+                    onTap: () => Navigator.push(
+                        context,
+                        MaterialPageRoute(
+                            builder: (context) =>
+                                ProfileScreen(uid: snap["owner"]))),
+                    child: Text(
+                      post_owner,
+                      style:
+                          TextStyle(fontWeight: FontWeight.bold, fontSize: 18),
+                    ),
                   )
                 ],
               ),

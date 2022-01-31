@@ -4,7 +4,6 @@ class User {
   String? username;
   String? name;
   String? dob;
-  String? email;
   String? bio;
   String? password;
   List? followers;
@@ -14,7 +13,6 @@ class User {
       {this.username,
       this.name,
       this.password,
-      this.email,
       this.dob,
       this.bio,
       this.followers,
@@ -29,7 +27,6 @@ class User {
           username: dataMap['username'],
           name: dataMap['name'],
           password: dataMap['password'],
-          email: dataMap['email'],
           dob: dataMap['dob'],
           bio: dataMap['bio'],
           followers: dataMap['followers'],

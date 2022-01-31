@@ -3,7 +3,6 @@ import 'package:instaglone/feed.dart';
 import 'package:instaglone/peopleList.dart';
 import 'package:instaglone/profilepage.dart';
 import 'add_post.dart';
-import 'edit_profile.dart';
 import 'searchlist.dart';
 import 'currentprofile.dart';
 
@@ -21,10 +20,9 @@ class _MyHomePageState extends State<MyHomePage> {
 
   static const List<Widget> _Pages = <Widget>[
     Feed(),
-    ListPage(),
+    SearchList(),
     CreatePost(),
-    //CurrentProfile(),
-    listPeople()
+    CurrentProfile()
   ];
 
   void _onPageSelected(int index) {

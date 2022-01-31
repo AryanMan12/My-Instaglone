@@ -5,84 +5,33 @@ import 'package:instaglone/Models/user.dart';
 import 'package:instaglone/profilepage.dart';
 import 'package:instaglone/Models/user.dart';
 
-class ListPage extends StatefulWidget {
-  const ListPage({Key? key}) : super(key: key);
+class SearchList extends StatefulWidget {
+  const SearchList({Key? key}) : super(key: key);
 
   @override
-  _ListPageState createState() => _ListPageState();
+  _SearchListState createState() => _SearchListState();
 }
 
-class _ListPageState extends State<ListPage> {
-  final TextEditingController searchController = TextEditingController();
-  bool isShowUsers = false;
-  void callPeople(User usr) {
-    Navigator.push<void>(
-        context,
-        MaterialPageRoute<void>(
-            builder: (BuildContext context) => ProfileScreen(
-                uid: User().getUidFromUsername(usr.username.toString()))));
-  }
-
+class _SearchListState extends State<SearchList> {
   @override
   Widget build(BuildContext context) {
-    return FirestoreSearchScaffold(
-      firestoreCollectionName: 'Users',
-      searchBy: 'username',
-      scaffoldBody: Center(),
-      dataListFromSnapshot: User().dataListFromSnapshot,
-      builder: (context, snapshot) {
-        if (snapshot.hasData) {
-          final List<User>? dataList = snapshot.data;
-          if (dataList!.isEmpty) {
-            return const Center(
-              child: Text('No Results Returned'),
-            );
-          }
-          return ListView.builder(
-              itemCount: dataList.length,
-              itemBuilder: (context, index) {
-                final User data = dataList[index];
-                FirebaseFirestore.instance
-                    .collection("Users")
-                    .where('username', isEqualTo: data.username);
-                return Column(
-                  mainAxisSize: MainAxisSize.min,
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    InkWell(
-                        onLongPress: () => callPeople(data),
-                        child: Padding(
-                          padding: const EdgeInsets.all(8.0),
-                          child: Text(
-                            '${data.name}',
-                            style: Theme.of(context).textTheme.headline6,
-                          ),
-                        )),
-                    InkWell(
-                        onLongPress: () => callPeople(data),
-                        child: Padding(
-                          padding: const EdgeInsets.only(
-                              bottom: 8.0, left: 8.0, right: 8.0),
-                          child: Text('${data.username}',
-                              style: Theme.of(context).textTheme.bodyText1),
-                        ))
-                  ],
-                );
-              });
-        }
-
-        if (snapshot.connectionState == ConnectionState.done) {
-          if (!snapshot.hasData) {
-            return const Center(
-              child: Text('No Results Returned'),
-            );
-          }
-        }
-        return const Center(
-          child: CircularProgressIndicator(),
-        );
-      },
+    return Scaffold(
+      backgroundColor: Colors.white,
+      appBar: AppBar(
+        title: TextField(
+          decoration: InputDecoration(
+              hintText: "Search",
+              hintStyle: TextStyle(fontSize: 20),
+              border: InputBorder.none,
+              icon: Icon(
+                Icons.search,
+                size: 24,
+                color: Colors.grey,
+              )),
+        ),
+        centerTitle: false,
+        elevation: 0,
+      ),
     );
   }
 }

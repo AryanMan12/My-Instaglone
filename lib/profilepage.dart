@@ -1,6 +1,10 @@
+import 'dart:ffi';
+
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
+import 'package:instaglone/Models/showSnackbar.dart';
+import 'package:instaglone/edit_profile.dart';
 import 'widgets/follow_button.dart';
 
 class ProfileScreen extends StatefulWidget {
@@ -12,6 +16,7 @@ class ProfileScreen extends StatefulWidget {
 }
 
 class _ProfileScreenState extends State<ProfileScreen> {
+  String current_user = " ";
   var userData = {};
   int postLen = 0;
   int followers = 0;
@@ -64,24 +69,19 @@ class _ProfileScreenState extends State<ProfileScreen> {
           .collection('Users')
           .doc(widget.uid)
           .get();
-      print("Got User");
 
       //get post LENGTH
       var postSnap = await FirebaseFirestore.instance
           .collection('Posts')
-          .where('UID', isEqualTo: FirebaseAuth.instance.currentUser!.uid)
+          .where('owner', isEqualTo: widget.uid)
           .get();
-      print("Got Posts");
       postLen = postSnap.docs.length;
       userData = userSnap.data()!;
       followers = userSnap.data()!['followers'].length;
       following = userSnap.data()!['following'].length;
-      isFollowing = userSnap
-          .data()!['followers']
-          .contains(FirebaseAuth.instance.currentUser!.uid);
-      setState(() {});
+      isFollowing = userSnap.data()?['followers'].contains(current_user);
     } catch (e) {
-      ShowSnackBar(
+      ShowSnack(
         context,
         e.toString(),
       );
@@ -95,14 +95,19 @@ class _ProfileScreenState extends State<ProfileScreen> {
 
   @override
   Widget build(BuildContext context) {
-    // getData();
+    User? user = FirebaseAuth.instance.currentUser;
+    if (user != null) {
+      current_user += user.uid;
+    }
     return isLoading
         ? const Center(
             child: CircularProgressIndicator(),
           )
         : Scaffold(
+            backgroundColor: Colors.white,
             appBar: AppBar(
-              backgroundColor: Colors.black26,
+              backgroundColor: Colors.white,
+              elevation: 0,
               title: Text(
                 userData['username'],
               ),
@@ -111,23 +116,23 @@ class _ProfileScreenState extends State<ProfileScreen> {
             body: ListView(
               children: [
                 Padding(
-                  padding: const EdgeInsets.all(16),
+                  padding:
+                      const EdgeInsets.symmetric(vertical: 1, horizontal: 15),
                   child: Column(
                     children: [
                       Row(
                         children: [
                           CircleAvatar(
                             backgroundColor: Colors.grey,
-                            child: Image.network(
+                            backgroundImage: NetworkImage(
                               userData['profile'],
-                              errorBuilder: (context, error, stackTrace) =>
-                                  Text("...."),
                             ),
                             radius: 40,
                           ),
                           Expanded(
                             flex: 1,
                             child: Column(
+                              mainAxisAlignment: MainAxisAlignment.spaceBetween,
                               children: [
                                 Row(
                                   mainAxisSize: MainAxisSize.min,
@@ -135,7 +140,9 @@ class _ProfileScreenState extends State<ProfileScreen> {
                                       MainAxisAlignment.spaceEvenly,
                                   children: [
                                     buildStatColumn(postLen, "Posts"),
+                                    SizedBox(width: 25),
                                     buildStatColumn(followers, "Followers"),
+                                    SizedBox(width: 20),
                                     buildStatColumn(following, "Following"),
                                   ],
                                 ),
@@ -150,7 +157,13 @@ class _ProfileScreenState extends State<ProfileScreen> {
                                             backgroundColor: Colors.black,
                                             textColor: Colors.white,
                                             borderColor: Colors.grey,
-                                            function: () {},
+                                            function: () => Navigator.push(
+                                                context,
+                                                MaterialPageRoute(
+                                                    builder: (context) =>
+                                                        EditProfile(
+                                                            uid:
+                                                                current_user))),
                                           )
                                         : isFollowing
                                             ? FollowButton(
@@ -162,7 +175,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
                                                   await followUser(
                                                     FirebaseAuth.instance
                                                         .currentUser!.uid,
-                                                    userData['uid'],
+                                                    widget.uid,
                                                   );
 
                                                   setState(() {
@@ -180,7 +193,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
                                                   await followUser(
                                                     FirebaseAuth.instance
                                                         .currentUser!.uid,
-                                                    userData['uid'],
+                                                    widget.uid,
                                                   );
 
                                                   setState(() {
@@ -199,7 +212,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
                       Container(
                         alignment: Alignment.centerLeft,
                         padding: const EdgeInsets.only(
-                          top: 15,
+                          top: 5,
                         ),
                         child: Text(
                           userData['username'],
@@ -224,7 +237,8 @@ class _ProfileScreenState extends State<ProfileScreen> {
                 FutureBuilder(
                   future: FirebaseFirestore.instance
                       .collection('Posts')
-                      .where('uid', isEqualTo: widget.uid)
+                      .where('owner', isEqualTo: widget.uid)
+                      .orderBy("createdOn", descending: true)
                       .get(),
                   builder: (context, snapshot) {
                     if (snapshot.connectionState == ConnectionState.waiting) {
@@ -239,9 +253,10 @@ class _ProfileScreenState extends State<ProfileScreen> {
                         gridDelegate:
                             const SliverGridDelegateWithFixedCrossAxisCount(
                                 crossAxisCount: 3,
-                                crossAxisSpacing: 5,
+                                crossAxisSpacing: 1.5,
                                 mainAxisSpacing: 1.5,
                                 childAspectRatio: 1),
+                        physics: ScrollPhysics(),
                         itemBuilder: (context, index) {
                           DocumentSnapshot snap =
                               (snapshot.data! as dynamic).docs[index];
@@ -268,7 +283,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
         Text(
           num.toString(),
           style: const TextStyle(
-            fontSize: 18,
+            fontSize: 20,
             fontWeight: FontWeight.bold,
           ),
         ),
@@ -277,7 +292,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
           child: Text(
             label,
             style: const TextStyle(
-              fontSize: 15,
+              fontSize: 16,
               fontWeight: FontWeight.w400,
               color: Colors.grey,
             ),
@@ -286,6 +301,4 @@ class _ProfileScreenState extends State<ProfileScreen> {
       ],
     );
   }
-
-  void ShowSnackBar(BuildContext context, String string) {}
 }
